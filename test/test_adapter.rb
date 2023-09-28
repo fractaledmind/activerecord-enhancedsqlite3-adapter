@@ -2,9 +2,9 @@
 
 require "test_helper"
 
-class Activerecord::Enhanced::Sqlite3::TestAdapter < Minitest::Test
+class ActiveRecord::ConnectionAdapters::EnhancedSQLite3AdapterAdapter < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::Activerecord::Enhanced::Sqlite3::Adapter::VERSION
+    refute_nil ::EnhancedSqlite3::VERSION
   end
 
   def test_it_does_something_useful

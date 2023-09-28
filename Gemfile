@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in activerecord-enhanced-sqlite3-adapter.gemspec
+# Specify your gem's dependencies in activerecord-enhancedsqlite3-adapter.gemspec
 gemspec
 
 gem "rake", "~> 13.0"
