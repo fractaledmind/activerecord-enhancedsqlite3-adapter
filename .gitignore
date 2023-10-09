@@ -7,3 +7,6 @@
 /spec/reports/
 /tmp/
 .DS_Store
+test/combustion/database.sqlite*
+test/combustion/log/test.log
+test/combustion/tmp/local_secret.txt
