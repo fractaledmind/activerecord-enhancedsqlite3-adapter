@@ -20,17 +20,17 @@ module EnhancedSQLite3
     # extends https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters/sqlite3_adapter.rb#L691
     def configure_connection
       configure_busy_handler
-      
+
       super
-      
+
       configure_pragmas
       configure_extensions
-      
+
       EnhancedSQLite3::SupportsVirtualColumns.apply!
     end
-    
+
     private
-    
+
     def configure_busy_handler
       if @config[:timeout] && @config[:retries]
         raise ArgumentError, "Cannot specify both timeout and retries arguments"
@@ -41,13 +41,13 @@ module EnhancedSQLite3
         end
       end
     end
-    
+
     def configure_pragmas
       @config.fetch(:pragmas, []).each do |key, value|
         execute("PRAGMA #{key} = #{value}", "SCHEMA")
       end
     end
-    
+
     def configure_extensions
       @raw_connection.enable_load_extension(true)
       @config.fetch(:extensions, []).each do |extension_name|

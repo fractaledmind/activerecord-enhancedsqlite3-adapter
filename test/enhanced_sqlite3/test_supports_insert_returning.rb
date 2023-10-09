@@ -6,7 +6,7 @@ require "test_helper"
 class EnhancedSQLite3::SupportsInsertReturningTest < ActiveSupport::TestCase
   class Default < ActiveRecord::Base
   end
-  
+
   def test_fills_auto_populated_columns_on_creation
     record_with_defaults = Default.create
     assert_not_nil record_with_defaults.id
@@ -19,7 +19,7 @@ class EnhancedSQLite3::SupportsInsertReturningTest < ActiveSupport::TestCase
     assert_not_nil record_with_defaults.modified_time_without_precision
     assert_not_nil record_with_defaults.modified_time_function
   end
-  
+
   def test_schema_dump_includes_default_expression
     output = dump_table_schema("defaults")
     assert_match %r/t\.date\s+"modified_date",\s+default: -> { "CURRENT_DATE" }/, output

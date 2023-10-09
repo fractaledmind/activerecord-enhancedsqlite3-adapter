@@ -3,7 +3,6 @@
 require "test_helper"
 # require "support/schema_dumping_helper"
 
-
 class EnhancedSQLite3::SupportsVirtualColumnsTest < ActiveSupport::TestCase
   # include SchemaDumpingHelper
 
@@ -13,7 +12,7 @@ class EnhancedSQLite3::SupportsVirtualColumnsTest < ActiveSupport::TestCase
   def setup
     @connection = ActiveRecord::Base.connection
     @connection.create_table :virtual_columns, force: true do |t|
-      t.string  :name
+      t.string :name
       t.virtual :upper_name, type: :string, as: "UPPER(name)", stored: true
       t.virtual :lower_name, type: :string, as: "LOWER(name)", stored: false
       t.virtual :octet_name, type: :integer, as: "LENGTH(name)"

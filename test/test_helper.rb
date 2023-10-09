@@ -5,7 +5,7 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "rails/version"
 require "sqlite3/version"
 
-p({ ruby: RUBY_VERSION, rails: Rails::VERSION::STRING, sqlite3: SQLite3::VERSION })
+p({ruby: RUBY_VERSION, rails: Rails::VERSION::STRING, sqlite3: SQLite3::VERSION})
 
 require "activerecord-enhancedsqlite3-adapter"
 

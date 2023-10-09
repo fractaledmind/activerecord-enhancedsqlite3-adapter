@@ -6,7 +6,7 @@ require "test_helper"
 class EnhancedSQLite3::SupportsConcatenationTest < ActiveSupport::TestCase
   class Default < ActiveRecord::Base
   end
-  
+
   def test_change_column_default_supports_default_function_with_concatenation_operator
     record_with_defaults = Default.create
     assert_equal "'Ruby ' || 'on ' || 'Rails'", Default.columns_hash["ruby_on_rails"].default_function
