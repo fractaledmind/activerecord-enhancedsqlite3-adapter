@@ -4,7 +4,7 @@ require_relative "lib/enhanced_sqlite3/version"
 
 Gem::Specification.new do |spec|
   spec.name = "activerecord-enhancedsqlite3-adapter"
-  spec.version = EnhancedSqlite3::VERSION
+  spec.version = EnhancedSQLite3::VERSION
   spec.authors = ["Stephen Margheim"]
   spec.email = ["stephen.margheim@gmail.com"]
 
@@ -32,9 +32,11 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activerecord", ">= 6.0"
+  spec.add_dependency "activerecord", ">= 7.1"
   spec.add_dependency "sqlite3", "~> 1.6"
 
-  # For more information and examples about making a new gem, check out our
-  # guide at: https://bundler.io/guides/creating_gem.html
+  spec.add_development_dependency 'combustion', '~> 1.3'
+  spec.add_development_dependency "railties"
+  spec.add_development_dependency "minitest"
+  spec.add_development_dependency "rake"
 end
