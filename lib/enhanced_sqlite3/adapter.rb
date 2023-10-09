@@ -20,8 +20,6 @@ module EnhancedSQLite3
     #
     # extends https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters/sqlite3_adapter.rb#L691
     def configure_connection
-      configure_busy_handler
-
       super
 
       configure_pragmas
@@ -32,17 +30,6 @@ module EnhancedSQLite3
     end
 
     private
-
-    def configure_busy_handler
-      if @config[:timeout] && @config[:retries]
-        raise ArgumentError, "Cannot specify both timeout and retries arguments"
-      elsif @config[:retries]
-        # see: https://www.sqlite.org/c3ref/busy_handler.html
-        @raw_connection.busy_handler do |count|
-          count <= @config[:retries]
-        end
-      end
-    end
 
     def configure_pragmas
       @config.fetch(:pragmas, []).each do |key, value|
