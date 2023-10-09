@@ -4,10 +4,7 @@ require "test_helper"
 # require "support/schema_dumping_helper"
 
 class EnhancedSQLite3::SupportsVirtualColumnsTest < ActiveSupport::TestCase
-  # include SchemaDumpingHelper
-
-  class VirtualColumn < ActiveRecord::Base
-  end
+  class VirtualColumn < ActiveRecord::Base; end
 
   def setup
     @connection = ActiveRecord::Base.connection
