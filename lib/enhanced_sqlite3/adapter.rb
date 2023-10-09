@@ -6,6 +6,7 @@
 
 require "active_record/connection_adapters/sqlite3_adapter"
 require "enhanced_sqlite3/supports_virtual_columns"
+require "enhanced_sqlite3/supports_deferrable_constraints"
 
 module EnhancedSQLite3
   module Adapter
@@ -27,6 +28,7 @@ module EnhancedSQLite3
       configure_extensions
 
       EnhancedSQLite3::SupportsVirtualColumns.apply!
+      EnhancedSQLite3::SupportsDeferrableConstraints.apply!
     end
 
     private
