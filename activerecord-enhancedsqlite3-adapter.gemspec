@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "sqlite3", "~> 1.6"
 
   spec.add_development_dependency "combustion", "~> 1.3"
+  spec.add_development_dependency "extralite"
   spec.add_development_dependency "railties"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "rake"
