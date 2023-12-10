@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.4.0] - 2023-12-10
+
+- Ensure transactions are IMMEDIATE and not DEFERRED
+- Ensure that our `busy_handler` is the very first configuration to be set on a connection
+- Simplify and speed up our `busy_handler` implementation
+
 ## [0.3.0] - 2023-12-06
 
 - Added a more performant implementation of the the `timeout` mechanism
