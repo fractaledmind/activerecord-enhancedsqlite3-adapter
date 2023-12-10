@@ -39,11 +39,10 @@ module EnhancedSQLite3
     # Implementations may assume this method will only be called while
     # holding @lock (or from #initialize).
     #
-    # extends https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters/sqlite3_adapter.rb#L691
+    # overrides https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters/sqlite3_adapter.rb#L691
     def configure_connection
-      super
-
       configure_busy_handler_timeout
+      check_version
       configure_pragmas
       configure_extensions
 
@@ -76,7 +75,36 @@ module EnhancedSQLite3
     end
 
     def configure_pragmas
-      @config.fetch(:pragmas, []).each do |key, value|
+      defaults = {
+        # Enforce foreign key constraints
+        # https://www.sqlite.org/pragma.html#pragma_foreign_keys
+        # https://www.sqlite.org/foreignkeys.html
+        "foreign_keys" => "ON",
+        # Impose a limit on the WAL file to prevent unlimited growth
+        # https://www.sqlite.org/pragma.html#pragma_journal_size_limit
+        "journal_size_limit" => 64.megabytes,
+        # Set the local connection cache to 2000 pages
+        # https://www.sqlite.org/pragma.html#pragma_cache_size
+        "cache_size" => 2000
+      }
+      unless @memory_database
+        defaults.merge!(
+          # Journal mode WAL allows for greater concurrency (many readers + one writer)
+          # https://www.sqlite.org/pragma.html#pragma_journal_mode
+          "journal_mode" => "WAL",
+          # Set more relaxed level of database durability
+          # 2 = "FULL" (sync on every write), 1 = "NORMAL" (sync every 1000 written pages) and 0 = "NONE"
+          # https://www.sqlite.org/pragma.html#pragma_synchronous
+          "synchronous" => "NORMAL",
+          # Set the global memory map so all processes can share some data
+          # https://www.sqlite.org/pragma.html#pragma_mmap_size
+          # https://www.sqlite.org/mmap.html
+          "mmap_size" => 128.megabytes
+        )
+      end
+      pragmas = defaults.merge(@config.fetch(:pragmas, {}))
+
+      pragmas.each do |key, value|
         execute("PRAGMA #{key} = #{value}", "SCHEMA")
       end
     end
