@@ -10,6 +10,27 @@ require "enhanced_sqlite3/supports_deferrable_constraints"
 
 module EnhancedSQLite3
   module Adapter
+    # Setup the Rails SQLite3 adapter instance.
+    #
+    # extends  https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters/sqlite3_adapter.rb#L90
+    def initialize(...)
+      super
+      # Ensure that all connections default to immediate transaction mode.
+      # This is necessary to prevent SQLite from deadlocking when concurrent processes open write transactions.
+      # By default, SQLite opens transactions in deferred mode, which means that a transactions acquire
+      # a shared lock on the database, but will attempt to upgrade that lock to an exclusive lock if/when
+      # a write is attempted. Because SQLite is in the middle of a transaction, it cannot retry the transaction
+      # if a BUSY exception is raised, and so it will immediately raise a SQLITE_BUSY exception without calling
+      # the `busy_handler`. Because Rails only wraps writes in transactions, this means that all transactions
+      # will attempt to acquire an exclusive lock on the database. Thus, under any concurrent load, you are very
+      # likely to encounter a SQLITE_BUSY exception.
+      # By setting the default transaction mode to immediate, SQLite will instead attempt to acquire
+      # an exclusive lock as soon as the transaction is opened. If the lock cannot be acquired, it will
+      # immediately call the `busy_handler` to retry the transaction. This allows concurrent processes to
+      # coordinate and linearize their transactions, avoiding deadlocks.
+      @connection_parameters.merge!(default_transaction_mode: :immediate)
+    end
+
     # Perform any necessary initialization upon the newly-established
     # @raw_connection -- this is the place to modify the adapter's
     # connection settings, run queries to configure any application-global
