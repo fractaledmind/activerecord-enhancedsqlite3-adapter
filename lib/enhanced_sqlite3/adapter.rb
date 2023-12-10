@@ -56,20 +56,21 @@ module EnhancedSQLite3
       return unless @config.key?(:timeout)
 
       timeout = self.class.type_cast_config_to_integer(@config[:timeout])
+      timeout_seconds = timeout.fdiv(1000)
+      retry_interval = 6e-5 # 60 microseconds
+
       @raw_connection.busy_handler do |count|
         timed_out = false
-        # capture the start time of this blocked write
-        @start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) if count == 0
         # keep track of elapsed time every 100 iterations (to lower load)
-        if count % 100 == 0
-          @elapsed_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - @start_time
+        if (count % 100).zero?
           # fail if we exceed the timeout value (captured from the timeout config option, converted to seconds)
-          timed_out = @elapsed_time > timeout
+          timed_out = (count * retry_interval) > timeout_seconds
         end
         if timed_out
           false # this will cause the BusyException to be raised
         else
-          sleep 0.001 # sleep 1 millisecond (or whatever)
+          sleep(retry_interval)
+          true
         end
       end
     end
