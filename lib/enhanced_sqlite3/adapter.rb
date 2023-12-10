@@ -37,7 +37,7 @@ module EnhancedSQLite3
 
       timeout = self.class.type_cast_config_to_integer(@config[:timeout])
       timeout_seconds = timeout.fdiv(1000)
-      retry_interval = 1.0e-9 # 1 nanosecond
+      retry_interval = 6e-5 # 60 microseconds
 
       @raw_connection.busy_handler do |count|
         timed_out = false
