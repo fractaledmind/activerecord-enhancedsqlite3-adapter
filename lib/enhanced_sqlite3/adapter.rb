@@ -93,11 +93,16 @@ module EnhancedSQLite3
     private
 
     def configure_busy_handler_timeout
-      return unless @config.key?(:timeout)
-      return if @config[:client] == "extralite" # extralite doesn't support busy_handler
+      return unless @config[:timeout]
 
       timeout = self.class.type_cast_config_to_integer(@config[:timeout])
       timeout_seconds = timeout.fdiv(1000)
+
+      if @config[:client] == "extralite"
+        @raw_connection.busy_timeout(timeout_seconds)
+        return
+      end
+
       retry_interval = 6e-5 # 60 microseconds
 
       @raw_connection.busy_handler do |count|
