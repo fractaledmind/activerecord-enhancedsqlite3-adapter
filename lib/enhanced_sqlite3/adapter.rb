@@ -94,6 +94,7 @@ module EnhancedSQLite3
 
     def configure_busy_handler_timeout
       return unless @config.key?(:timeout)
+      return if @config[:client] == "extralite" # extralite doesn't support busy_handler
 
       timeout = self.class.type_cast_config_to_integer(@config[:timeout])
       timeout_seconds = timeout.fdiv(1000)
