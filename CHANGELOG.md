@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.5.0] - 2023-12-24
+
+- Load extensions installed via project-scoped `sqlpkg`
+
 ## [0.4.0] - 2023-12-10
 
 - Ensure transactions are IMMEDIATE and not DEFERRED
