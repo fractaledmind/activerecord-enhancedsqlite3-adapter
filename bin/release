@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+VERSION=$1
+
+if [ -z "$VERSION" ]; then
+  echo "Usage: $0 <version>"
+  exit 1
+fi
+
+printf "module EnhancedSQLite3\n  VERSION = \"$VERSION\"\nend\n" > ./lib/enhanced_sqlite3/version.rb
+bundle
+git add Gemfile.lock lib/enhanced_sqlite3/version.rb CHANGELOG.md
+git commit -m "Bump version for $VERSION"
+git push
+git tag v$VERSION
+git push --tags
+
+rake build
+gem push pkg/activerecord-enhancedsqlite3-adapter-$VERSION.gem --host https://rubygems.org
+rm pkg/activerecord-enhancedsqlite3-adapter-$VERSION.gem
