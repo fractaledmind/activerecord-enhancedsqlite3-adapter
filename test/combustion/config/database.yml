@@ -1,3 +1,4 @@
 test:
   adapter: sqlite3
   database: database.sqlite
+  client: <%= "extralite" if ENV["EXTRALITE"] == "true" %>

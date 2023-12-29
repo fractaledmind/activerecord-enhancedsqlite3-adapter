@@ -7,28 +7,68 @@
 require "active_record/connection_adapters/sqlite3_adapter"
 require "enhanced_sqlite3/supports_virtual_columns"
 require "enhanced_sqlite3/supports_deferrable_constraints"
+require "enhanced_sqlite3/extralite/database_compatibility"
+require "enhanced_sqlite3/extralite/adapter_compatibility"
 
 module EnhancedSQLite3
   module Adapter
+    module ClassMethods
+      def new_client(config)
+        if config[:client] == "extralite"
+          new_client_extralite(config)
+        else
+          super
+        end
+      end
+
+      def new_client_extralite(config)
+        config.delete(:results_as_hash)
+
+        if config[:strict] == true
+          raise ArgumentError, "The :strict option is not supported by the SQLite3 adapter using Extralite"
+        end
+
+        unsupported_configuration_keys = config.keys - %i[database readonly client adapter strict timeout pool]
+        if unsupported_configuration_keys.any?
+          Rails.logger.warn "Unsupported configuration options for SQLite3 adapter using Extralite: #{unsupported_configuration_keys}"
+        end
+
+        ::Extralite::Database.new(config[:database].to_s, read_only: config[:readonly]).tap do |database|
+          database.singleton_class.prepend EnhancedSQLite3::Extralite::DatabaseCompatibility
+        end
+      rescue Errno::ENOENT => error
+        if error.message.include?("No such file or directory")
+          raise ActiveRecord::NoDatabaseError
+        else
+          raise
+        end
+      end
+    end
+
     # Setup the Rails SQLite3 adapter instance.
     #
     # extends  https://github.com/rails/rails/blob/main/activerecord/lib/active_record/connection_adapters/sqlite3_adapter.rb#L90
     def initialize(...)
       super
-      # Ensure that all connections default to immediate transaction mode.
-      # This is necessary to prevent SQLite from deadlocking when concurrent processes open write transactions.
-      # By default, SQLite opens transactions in deferred mode, which means that a transactions acquire
-      # a shared lock on the database, but will attempt to upgrade that lock to an exclusive lock if/when
-      # a write is attempted. Because SQLite is in the middle of a transaction, it cannot retry the transaction
-      # if a BUSY exception is raised, and so it will immediately raise a SQLITE_BUSY exception without calling
-      # the `busy_handler`. Because Rails only wraps writes in transactions, this means that all transactions
-      # will attempt to acquire an exclusive lock on the database. Thus, under any concurrent load, you are very
-      # likely to encounter a SQLITE_BUSY exception.
-      # By setting the default transaction mode to immediate, SQLite will instead attempt to acquire
-      # an exclusive lock as soon as the transaction is opened. If the lock cannot be acquired, it will
-      # immediately call the `busy_handler` to retry the transaction. This allows concurrent processes to
-      # coordinate and linearize their transactions, avoiding deadlocks.
-      @connection_parameters.merge!(default_transaction_mode: :immediate)
+
+      if @config[:client] == "extralite"
+        singleton_class.prepend EnhancedSQLite3::Extralite::AdapterCompatibility
+      else
+        # Ensure that all connections default to immediate transaction mode.
+        # This is necessary to prevent SQLite from deadlocking when concurrent processes open write transactions.
+        # By default, SQLite opens transactions in deferred mode, which means that a transactions acquire
+        # a shared lock on the database, but will attempt to upgrade that lock to an exclusive lock if/when
+        # a write is attempted. Because SQLite is in the middle of a transaction, it cannot retry the transaction
+        # if a BUSY exception is raised, and so it will immediately raise a SQLITE_BUSY exception without calling
+        # the `busy_handler`. Because Rails only wraps writes in transactions, this means that all transactions
+        # will attempt to acquire an exclusive lock on the database. Thus, under any concurrent load, you are very
+        # likely to encounter a SQLITE_BUSY exception.
+        # By setting the default transaction mode to immediate, SQLite will instead attempt to acquire
+        # an exclusive lock as soon as the transaction is opened. If the lock cannot be acquired, it will
+        # immediately call the `busy_handler` to retry the transaction. This allows concurrent processes to
+        # coordinate and linearize their transactions, avoiding deadlocks.
+        @connection_parameters.merge!(default_transaction_mode: :immediate)
+      end
     end
 
     # Perform any necessary initialization upon the newly-established
@@ -53,10 +93,16 @@ module EnhancedSQLite3
     private
 
     def configure_busy_handler_timeout
-      return unless @config.key?(:timeout)
+      return unless @config[:timeout]
 
       timeout = self.class.type_cast_config_to_integer(@config[:timeout])
       timeout_seconds = timeout.fdiv(1000)
+
+      if @config[:client] == "extralite"
+        @raw_connection.busy_timeout(timeout_seconds)
+        return
+      end
+
       retry_interval = 6e-5 # 60 microseconds
 
       @raw_connection.busy_handler do |count|
@@ -111,7 +157,9 @@ module EnhancedSQLite3
     end
 
     def configure_extensions
-      @raw_connection.enable_load_extension(true)
+      # NOTE: Extralite enables extension loading by default and doesn't provide an API to toggle it.
+      @raw_connection.enable_load_extension(true) if @raw_connection.is_a?(::SQLite3::Database)
+
       @config.fetch(:extensions, []).each do |extension_name|
         require extension_name
         extension_classname = extension_name.camelize
@@ -122,7 +170,7 @@ module EnhancedSQLite3
       rescue NameError
         Rails.logger.error("Failed to find the SQLite extension class: #{extension_classname}. Skipping...")
       end
-      @raw_connection.enable_load_extension(false)
+      @raw_connection.enable_load_extension(false) if @raw_connection.is_a?(::SQLite3::Database)
     end
   end
 end
