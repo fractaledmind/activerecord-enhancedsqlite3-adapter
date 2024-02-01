@@ -56,21 +56,20 @@ module EnhancedSQLite3
       return unless @config.key?(:timeout)
 
       timeout = self.class.type_cast_config_to_integer(@config[:timeout])
-      timeout_seconds = timeout.fdiv(1000)
-      retry_interval = 6e-5 # 60 microseconds
 
-      @raw_connection.busy_handler do |count|
-        timed_out = false
-        # keep track of elapsed time every 100 iterations (to lower load)
-        if (count % 100).zero?
-          # fail if we exceed the timeout value (captured from the timeout config option, converted to seconds)
-          timed_out = (count * retry_interval) > timeout_seconds
-        end
-        if timed_out
-          false # this will cause the BusyException to be raised
-        else
-          sleep(retry_interval)
-          true
+      if @raw_connection.respond_to?(:busy_handler_timeout=)
+        @raw_connection.busy_handler_timeout = timeout
+      else
+        timeout_seconds = milliseconds.fdiv(1000)
+        @raw_connection.busy_handler do |count|
+          now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          if count.zero?
+            @timeout_deadline = now + timeout_seconds
+          elsif now > @timeout_deadline
+            next false
+          else
+            sleep(0.001)
+          end
         end
       end
     end
