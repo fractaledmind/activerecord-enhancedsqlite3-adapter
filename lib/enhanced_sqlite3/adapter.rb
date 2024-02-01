@@ -44,7 +44,7 @@ module EnhancedSQLite3
       configure_busy_handler_timeout
       check_version
       configure_pragmas
-      configure_extensions
+      load_extensions
 
       EnhancedSQLite3::SupportsVirtualColumns.apply!
       EnhancedSQLite3::SupportsDeferrableConstraints.apply!
@@ -110,8 +110,13 @@ module EnhancedSQLite3
       end
     end
 
-    def configure_extensions
+    def load_extensions
       @raw_connection.enable_load_extension(true)
+      # first, load any extensions installed via `sqlpkg`
+      Dir.glob(".sqlpkg/**/*.{dll,so,dylib}") do |extension_path|
+        @raw_connection.load_extension(extension_path)
+      end
+      # then, load any extensions specified in the `database.yml`
       @config.fetch(:extensions, []).each do |extension_name|
         require extension_name
         extension_classname = extension_name.camelize
