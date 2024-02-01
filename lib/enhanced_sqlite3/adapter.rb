@@ -46,7 +46,7 @@ module EnhancedSQLite3
       configure_pragmas
       configure_extensions
 
-      EnhancedSQLite3::SupportsVirtualColumns.apply! unless Rails.version.match?(/7\.2/)
+      EnhancedSQLite3::SupportsVirtualColumns.apply! if Rails.gem_version < Gem::Version.new("7.2")
       EnhancedSQLite3::SupportsDeferrableConstraints.apply!
     end
 
