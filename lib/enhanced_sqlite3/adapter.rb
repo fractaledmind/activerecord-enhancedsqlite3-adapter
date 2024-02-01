@@ -46,7 +46,7 @@ module EnhancedSQLite3
       configure_pragmas
       configure_extensions
 
-      EnhancedSQLite3::SupportsVirtualColumns.apply! unless try(:supports_supports_virtual_columns?)
+      EnhancedSQLite3::SupportsVirtualColumns.apply! unless try(:supports_virtual_columns?)
       EnhancedSQLite3::SupportsDeferrableConstraints.apply! unless try(:supports_deferrable_constraints?)
     end
 
