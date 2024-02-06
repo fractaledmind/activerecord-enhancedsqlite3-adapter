@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # supports concatenation in default functions: https://github.com/rails/rails/pull/49287
-# supports insert returning values: https://github.com/rails/rails/pull/49290
 # supports configuring busy_handler: https://github.com/rails/rails/pull/49352
 
 require "active_record/connection_adapters/sqlite3_adapter"
 require "enhanced_sqlite3/supports_virtual_columns"
 require "enhanced_sqlite3/supports_deferrable_constraints"
+require "enhanced_sqlite3/supports_insert_returning"
 
 module EnhancedSQLite3
   module Adapter
@@ -48,6 +48,7 @@ module EnhancedSQLite3
 
       EnhancedSQLite3::SupportsVirtualColumns.apply! unless try(:supports_virtual_columns?)
       EnhancedSQLite3::SupportsDeferrableConstraints.apply! unless try(:supports_deferrable_constraints?)
+      EnhancedSQLite3::SupportsInsertReturning.apply! unless try(:supports_insert_returning?)
     end
 
     private
