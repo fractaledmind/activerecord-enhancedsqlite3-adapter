@@ -12,7 +12,12 @@ require "activerecord-enhancedsqlite3-adapter"
 require "minitest/autorun"
 
 require "combustion"
-# require "sqlite3"
+
+if ENV["EXTRALITE"] == "true"
+  puts "Testing in Extralite client mode..."
+  require "extralite"
+end
+
 Combustion.path = "test/combustion"
 Combustion.initialize! :active_record
 
