@@ -2,6 +2,7 @@
 
 require "rails/railtie"
 require "enhanced_sqlite3/adapter"
+require "enhanced_sqlite3/extension_loading"
 require "enhanced_sqlite3/isolated_connection_pools"
 require "enhanced_sqlite3/resolver"
 

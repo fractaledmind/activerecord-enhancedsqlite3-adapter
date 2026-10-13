@@ -44,7 +44,6 @@ module EnhancedSQLite3
       configure_busy_handler_timeout
       check_version
       configure_pragmas
-      configure_extensions
 
       EnhancedSQLite3::SupportsVirtualColumns.apply! unless try(:supports_virtual_columns?)
       EnhancedSQLite3::SupportsDeferrableConstraints.apply! unless try(:supports_deferrable_constraints?)
@@ -104,31 +103,6 @@ module EnhancedSQLite3
       pragmas.each do |key, value|
         execute("PRAGMA #{key} = #{value}", "SCHEMA")
       end
-    end
-
-    def configure_extensions
-      @raw_connection.enable_load_extension(true)
-      @config.fetch(:extensions, []).each do |extension_name|
-        if extension_name.include?("/")
-          raise LoadError unless Dir.exist?(".sqlpkg/#{extension_name}")
-          Dir.glob(".sqlpkg/#{extension_name}/*.{dll,so,dylib}") do |extension_path|
-            @raw_connection.load_extension(extension_path)
-          end
-        else
-          require extension_name
-          extension_classname = extension_name.camelize
-          extension_class = extension_classname.constantize
-          extension_class.load(@raw_connection)
-        end
-      rescue LoadError
-        Dir.glob(".sqlpkg/**/*.{dll,so,dylib}") do |extension_path|
-          @raw_connection.load_extension(extension_path)
-        end
-        Rails.logger.error("Failed to find the SQLite extension gem: #{extension_name}. Skipping...")
-      rescue NameError
-        Rails.logger.error("Failed to find the SQLite extension class: #{extension_classname}. Skipping...")
-      end
-      @raw_connection.enable_load_extension(false)
     end
   end
 end

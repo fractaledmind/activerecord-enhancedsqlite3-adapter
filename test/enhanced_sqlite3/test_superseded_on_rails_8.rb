@@ -13,9 +13,13 @@ class EnhancedSQLite3::SupersededOnRails8Test < ActiveSupport::TestCase
       assert_not_includes adapter_ancestors, EnhancedSQLite3::IsolatedConnectionPools
     end
 
+    def test_loads_extensions_only_where_rails_does_not
+      assert_equal !EnhancedSQLite3.reads_extensions_config?, adapter_ancestors.include?(EnhancedSQLite3::ExtensionLoading)
+    end
+
     def test_keeps_isolated_connection_pools_when_enabled
       EnhancedSQLite3.isolate_connection_pools = true
-      assert_equal [EnhancedSQLite3::IsolatedConnectionPools], EnhancedSQLite3.adapter_patches
+      assert_includes EnhancedSQLite3.adapter_patches, EnhancedSQLite3::IsolatedConnectionPools
     ensure
       EnhancedSQLite3.isolate_connection_pools = false
       EnhancedSQLite3.instance_variable_set(:@isolate_connection_pools, nil)
@@ -29,6 +33,7 @@ class EnhancedSQLite3::SupersededOnRails8Test < ActiveSupport::TestCase
   else
     def test_enhances_the_rails_adapter
       assert_includes adapter_ancestors, EnhancedSQLite3::Adapter
+      assert_includes adapter_ancestors, EnhancedSQLite3::ExtensionLoading
       assert_includes adapter_ancestors, EnhancedSQLite3::IsolatedConnectionPools
     end
 
