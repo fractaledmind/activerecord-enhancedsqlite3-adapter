@@ -10,11 +10,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }}
+    name: Ruby ${{ matrix.ruby }} / Rails ${{ matrix.rails }}
     strategy:
+      fail-fast: false
       matrix:
         ruby:
-          - '3.2.1'
+          - '3.4'
+        rails:
+          - '7_1'
+          - '7_2'
+          - '8_0'
+          - '8_1'
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rails_${{ matrix.rails }}.gemfile
 
     steps:
     - uses: actions/checkout@v3

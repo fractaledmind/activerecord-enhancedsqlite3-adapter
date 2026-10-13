@@ -1,5 +1,22 @@
 # ActiveRecord Enhanced SQLite3 Adapter
 
+> [!IMPORTANT]
+> **You do not need this gem on Rails 8 or later.** Rails 8 ships everything below except isolated connection pools:
+>
+> | This gem | Rails |
+> |---|---|
+> | Generated columns, deferred foreign keys, `INSERT … RETURNING` | built in since 7.1 / 7.2 |
+> | `IMMEDIATE` transactions and a non-blocking busy timeout | built in since 7.2 |
+> | `pragmas:` in `config/database.yml` | built in since 8.0 |
+> | `extensions:` in `config/database.yml` | built in since 8.1 |
+>
+> From version 0.9.0, on Rails 8 the gem leaves the SQLite3 adapter untouched and prints a deprecation warning at boot. Remove it from your Gemfile. Two exceptions:
+>
+> * On Rails 8.0 the gem still loads `extensions:`, which Rails itself reads only from 8.1. Keep the gem until you upgrade if you use them.
+> * `isolate_connection_pools` still works on Rails 8, but it is experimental and will not be developed further.
+>
+> On Rails 7.1 and 7.2 the gem works as before.
+
 Enhance ActiveRecord's 7.1 SQLite3 adapter. Adds support for:
 
 * generated columns,
