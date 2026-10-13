@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-13
+
 - On Rails 8 and later, leave the SQLite3 adapter untouched and print a deprecation warning, since Rails ships these enhancements itself; `isolate_connection_pools` still works, and on Rails 8.0 `extensions:` are still loaded ([#24](https://github.com/fractaledmind/activerecord-enhancedsqlite3-adapter/issues/24))
 - Test against Rails 7.1, 7.2, 8.0 and 8.1 in CI
 
