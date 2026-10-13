@@ -2,6 +2,7 @@
 
 require "rails/railtie"
 require "enhanced_sqlite3/adapter"
+require "enhanced_sqlite3/isolated_connection_pools"
 require "enhanced_sqlite3/resolver"
 
 module EnhancedSQLite3
@@ -14,11 +15,16 @@ module EnhancedSQLite3
       end
     end
 
+    initializer "enhanced_sqlite3.deprecator" do |app|
+      app.deprecators[:enhanced_sqlite3] = EnhancedSQLite3.deprecator
+      EnhancedSQLite3.warn_if_superseded
+    end
+
     # Enhance the SQLite3 ActiveRecord adapter with optimized defaults
     initializer "enhanced_sqlite3.enhance_active_record_sqlite3adapter" do |app|
       ActiveSupport.on_load(:active_record_sqlite3adapter) do
         # self refers to `SQLite3Adapter` here
-        prepend EnhancedSQLite3::Adapter
+        EnhancedSQLite3.adapter_patches.each { |patch| prepend patch }
       end
     end
 

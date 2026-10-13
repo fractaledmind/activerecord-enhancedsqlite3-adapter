@@ -21,7 +21,9 @@ def dump_table_schema(*tables)
   ActiveRecord::SchemaDumper.ignore_tables = connection.data_sources - tables
   stream = StringIO.new
 
-  ActiveRecord::SchemaDumper.dump(connection, stream)
+  # Rails 7.2 changed SchemaDumper.dump to take a connection pool.
+  dumpable = (ActiveRecord.version >= Gem::Version.new("7.2")) ? ActiveRecord::Base.connection_pool : connection
+  ActiveRecord::SchemaDumper.dump(dumpable, stream)
   stream.string
 ensure
   ActiveRecord::SchemaDumper.ignore_tables = old_ignore_tables
