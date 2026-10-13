@@ -10,7 +10,10 @@
 > | `pragmas:` in `config/database.yml` | built in since 8.0 |
 > | `extensions:` in `config/database.yml` | built in since 8.1 |
 >
-> From version 0.9.0, on Rails 8 the gem leaves the SQLite3 adapter untouched and prints a deprecation warning at boot. Remove it from your Gemfile. The one exception is `isolate_connection_pools`, which still works on Rails 8 but is experimental and will not be developed further.
+> From version 0.9.0, on Rails 8 the gem leaves the SQLite3 adapter untouched and prints a deprecation warning at boot. Remove it from your Gemfile. Two exceptions:
+>
+> * On Rails 8.0 the gem still loads `extensions:`, which Rails itself reads only from 8.1. Keep the gem until you upgrade if you use them.
+> * `isolate_connection_pools` still works on Rails 8, but it is experimental and will not be developed further.
 >
 > On Rails 7.1 and 7.2 the gem works as before.
 
